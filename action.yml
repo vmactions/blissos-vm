@@ -1,0 +1,76 @@
+name: 'BlissOS-vm'
+description: 'Run CI in BlissOS for GitHub Actions'
+inputs:
+  osname:
+    description: 'The OS name'
+    required: true
+    default: 'BlissOS'
+  prepare:
+    description: 'Install some tools before CI runs'
+    required: false
+  run:
+    description: 'The CI command to run'
+    required: false
+  release:
+    description: 'The release version of BlissOS vm'
+    required: false
+  arch:
+    description: 'The cpu architecture of BlissOS vm'
+    required: false
+  envs:
+    description: 'The envs to pass into BlissOS vm'
+    required: false
+  mem:
+    description: 'Set the memory size of the vm'
+    required: false
+    default: '6144'
+  cpu:
+    description: 'Set the cpu cores of the vm'
+    required: false
+  nat:
+    description: 'The NAT ports to BlissOS vm'
+    required: false
+  usesh:
+    description: 'Use sh instead of the default shell. Default is false.'
+    required: false
+  sync:
+    description: 'How to synchronize the source code to/from the VM. Default is rsync.'
+    required: false
+  copyback:
+    description: 'whether or not to copy the build result repo back from the VM to the host Mac OS, defalt is True'
+    required: false
+  debug:
+    description: 'output debug message'
+    required: false
+  data-dir:
+    description: 'Directory to store VM data/images.'
+    required: false
+  cache-dir:
+    description: 'Directory to store anyvm cache. If set, overrides default temp cache path.'
+    required: false
+  sync-time:
+    description: 'Synchronize the VM time with the ntp. Default is false.'
+    required: false
+  disable-cache:
+    description: 'Disable caching for apt packages and VM images. Default is false.'
+    required: false
+    default: 'false'
+  debug-on-error:
+    description: 'If true, enable remote VNC and you can connect to the VM via web VNC page to debug. Default is false.'
+    required: false
+    default: ''
+  vnc-password:
+    description: 'The VNC password. Default is empty.'
+    required: false
+    default: ''
+  custom-shell-name:
+    description: 'Custom shell name for the VM shell wrapper script.'
+    required: false
+branding:
+  icon: 'activity'  
+  color: 'green'
+
+runs:
+  using: 'node24'
+  main: 'index.js'
+

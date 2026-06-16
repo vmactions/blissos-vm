@@ -1,0 +1,27 @@
+{
+  "name": "vmactions-BlissOS",
+  "version": "",
+  "description": "GitHub actions for BlissOS",
+  "type": "module",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vmactions/blissos-vm.git"
+  },
+  "keywords": [
+    "GitHub",
+    "Actions",
+    "BlissOS"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/vmactions/blissos-vm/issues"
+  },
+  "homepage": "https://github.com/vmactions/blissos-vm",
+  "dependencies": {
+    "@actions/core": "^3.0.0",
+    "@actions/exec": "^3.0.0",
+    "@actions/cache": "^6.0.0"
+  }
+}

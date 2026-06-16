@@ -1,0 +1,711 @@
+
+name: Test
+
+on:
+  workflow_dispatch:
+  release:
+    types: [ published ]
+  push:
+    branches:
+      - '*'
+    paths:
+      - '**.sh'
+      - '.github/workflows/test.yml'
+      - 'index.js'
+      - 'conf/*'
+      - 'hooks/*'
+
+
+
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+
+
+jobs:
+  testsshfs:
+    if: ${{ !contains(github.repository, 'dragonflybsd') && !contains(github.repository, 'solaris') && !contains(github.repository, 'omnios') && !contains(github.repository, 'haiku') && !contains(github.repository, 'tribblix') && !contains(github.repository, 'blissos')}}
+    strategy:
+      fail-fast: false
+      matrix:
+        release: [ "14", "15", "16"
+, ""]
+        arch: [ "aarch64", "", "riscv64"]
+        runs: [ "ubuntu-24.04", "ubuntu-24.04-arm"]
+        exclude:
+          - runs: "ubuntu-24.04-arm"
+            arch: ""
+          - runs: "ubuntu-24.04-arm"
+            arch: "riscv64"
+          - arch: "aarch64"
+            runs: "ubuntu-24.04"
+          - arch: "aarch64"
+            runs: "ubuntu-24.04-arm"
+          - arch: "riscv64"
+            runs: "ubuntu-24.04"
+
+
+
+    runs-on: ${{ matrix.runs }}
+    name: sshfs BlissOS
+    env:
+      MYTOKEN : ${{ secrets.MYTOKEN }}
+      MYTOKEN2: "value2"
+      DEBUG: 1
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    steps:
+    - uses: actions/checkout@v6
+    - name: Check arch
+      id: check
+      run: |
+        _release="${{ matrix.release }}"
+        if [ -z "$_release" ]; then
+          . conf/default.release.conf
+          _release="$DEFAULT_RELEASE"
+        fi
+
+        _arch="${{ matrix.arch }}"
+        if [ "${_arch}" = "x86_64" ]; then
+          _arch=""
+        fi
+
+        if [ -z "${_arch}" ]; then
+          #ok, go ahead
+          echo "arch is empty"
+          echo "run=true" >> $GITHUB_OUTPUT
+        elif [ -e "conf/${_release}-${_arch}.conf" ]; then
+          echo "conf exists: conf/${_release}-${_arch}.conf"
+          #ok, go ahead
+          if [[ "$(echo "BlissOS" | tr '[:upper:]' '[:lower:]')-${_arch}" == "freebsd-riscv64" ]]; then
+            echo "The BlissOS-${_arch} doesn't support sshfs, skip."
+            echo "run=false" >> $GITHUB_OUTPUT
+          else
+            echo "run=true" >> $GITHUB_OUTPUT
+          fi
+        else
+          echo "The release ${_release} doesn't support ${_arch}, skip."
+          echo "run=false" >> $GITHUB_OUTPUT
+        fi
+#    - name: Creating Web console
+#      if: ${{ steps.check.outputs.run == 'true' }}
+#      uses: vmactions/cf-tunnel@v0
+#      id: tunnel
+#      with:
+#        protocol: http
+#        port: 8000
+
+    - name: Test in BlissOS
+      if: ${{ steps.check.outputs.run == 'true' }}
+      id: test
+      uses: vmactions/blissos-vm@81d7ff01e3739951321c4f37edc2fd0177f56d0c
+      with:
+        envs: 'DEBUG MYTOKEN MYTOKEN2'
+        prepare: |
+          uname -a
+        mem: 4096
+        release: ${{ matrix.release }}
+        arch: ${{ matrix.arch }}
+        nat: |
+          "20022": "22"
+          "8080": "80"
+          "8443": "443"
+          udp:"8081": "80"
+        usesh: true
+        debug: true
+        debug-on-error: ${{ vars.DEBUG_ON_ERROR }}
+        sync: sshfs
+        run: |
+          set -e
+          ls -lah $HOME/work
+          if [ -z "$(ls -A $HOME/work)" ]; then
+            echo "sshfs error."
+            exit 1
+          fi
+          echo "TEST_ENV=abc" >>${GITHUB_ENV}
+          echo "textfromvm" >$GITHUB_WORKSPACE/vm.txt
+          pwd
+          ls -lah
+          whoami
+          env
+          uname -a
+          echo "OK"
+
+    - name: Test NAT
+      if: ${{ steps.check.outputs.run == 'true' }}
+      env:
+        VM_USER: ""
+      run: |
+        set -e
+        echo "TEST_ENV=$TEST_ENV"
+        [ "$TEST_ENV" = "abc" ]
+        ssh -v -p 20022 ${VM_USER:-root}@localhost  "uname -a;whoami;pwd"
+    - name: Test custom shell
+      if: ${{ steps.check.outputs.run == 'true' }}
+      shell: blissos {0}
+      run: |
+        pwd
+          pwd
+          ls -lah
+          whoami
+          env
+          uname -a
+          echo "OK"
+
+
+
+
+
+
+  testnfs:
+    if: ${{!contains(github.repository, 'haiku') && !contains(github.repository, 'blissos')}}
+    strategy:
+      fail-fast: false
+      matrix:
+        release: [ "14", "15", "16"
+, ""]
+        arch: [ "aarch64", "", "riscv64"]
+        runs: [ "ubuntu-24.04", "ubuntu-24.04-arm"]
+        exclude:
+          - runs: "ubuntu-24.04-arm"
+            arch: ""
+          - runs: "ubuntu-24.04-arm"
+            arch: "riscv64"
+          - arch: "aarch64"
+            runs: "ubuntu-24.04"
+          - arch: "aarch64"
+            runs: "ubuntu-24.04-arm"
+          - arch: "riscv64"
+            runs: "ubuntu-24.04"
+
+
+
+    runs-on: ${{ matrix.runs }}
+    name: nfs BlissOS
+    env:
+      MYTOKEN : ${{ secrets.MYTOKEN }}
+      MYTOKEN2: "value2"
+      DEBUG: 1
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    steps:
+    - uses: actions/checkout@v6
+    - name: Check arch
+      id: check
+      run: |
+        _release="${{ matrix.release }}"
+        if [ -z "$_release" ]; then
+          . conf/default.release.conf
+          _release="$DEFAULT_RELEASE"
+        fi
+
+        _arch="${{ matrix.arch }}"
+        if [ "${_arch}" = "x86_64" ]; then
+          _arch=""
+        fi
+
+        if [ -z "${_arch}" ]; then
+          #ok, go ahead
+          echo "arch is empty"
+          echo "run=true" >> $GITHUB_OUTPUT
+        elif [ -e "conf/${_release}-${_arch}.conf" ]; then
+          #ok, go ahead
+          echo "conf exists: conf/${_release}-${_arch}.conf"
+          if [[ "$(echo "BlissOS" | tr '[:upper:]' '[:lower:]')-${_arch}" == "freebsd-riscv64" ]]; then
+            echo "The BlissOS-${_arch} doesn't support nfs, skip."
+            echo "run=false" >> $GITHUB_OUTPUT
+          else
+            echo "run=true" >> $GITHUB_OUTPUT
+          fi
+        else
+          echo "The release ${_release} doesn't support ${_arch}, skip."
+          echo "run=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Test in BlissOS
+      if: ${{ steps.check.outputs.run == 'true' }}
+      id: test
+      uses: vmactions/blissos-vm@81d7ff01e3739951321c4f37edc2fd0177f56d0c
+      with:
+        envs: 'DEBUG MYTOKEN MYTOKEN2'
+        prepare: |
+          uname -a
+        mem: 4096
+        release: ${{ matrix.release }}
+        arch: ${{ matrix.arch }}
+        nat: |
+          "20022": "22"
+          "8080": "80"
+          "8443": "443"
+          udp:"8081": "80"
+        usesh: true
+        debug: true
+        debug-on-error: ${{ vars.DEBUG_ON_ERROR }}
+        sync: nfs
+        run: |
+          ls -lah $HOME/work
+          if [ -z "$(ls -A $HOME/work)" ]; then
+            echo "nfs error."
+            exit 1
+          fi
+          env
+          echo "TEST_ENV=abc" >>${GITHUB_ENV}
+          echo "textfromvm" >$GITHUB_WORKSPACE/vm.txt
+          pwd
+          ls -lah
+          whoami
+          env
+          uname -a
+          echo "OK"
+
+    - name: Test NAT
+      if: ${{ steps.check.outputs.run == 'true' }}
+      env:
+        VM_USER: ""
+      run: |
+        set -e
+        [ -e "$GITHUB_WORKSPACE/vm.txt" ];
+        cat "$GITHUB_WORKSPACE/vm.txt";
+        grep "textfromvm" $GITHUB_WORKSPACE/vm.txt;
+        echo "TEST_ENV=$TEST_ENV"
+        [ "$TEST_ENV" = "abc" ]
+        ssh -v -p 20022 ${VM_USER:-root}@localhost "uname -a;whoami;pwd"
+    - name: Test custom shell
+      if: ${{ steps.check.outputs.run == 'true' }}
+      shell: blissos {0}
+      run: |
+        pwd
+          pwd
+          ls -lah
+          whoami
+          env
+          uname -a
+          echo "OK"
+
+
+
+
+  testscp:
+    strategy:
+      fail-fast: false
+      matrix:
+        release: [ "14", "15", "16"
+, ""]
+        arch: [ "aarch64", "", "riscv64"]
+        runs: [ "ubuntu-24.04", "ubuntu-24.04-arm"]
+        exclude:
+          - runs: "ubuntu-24.04-arm"
+            arch: ""
+          - runs: "ubuntu-24.04-arm"
+            arch: "riscv64"
+          - arch: "aarch64"
+            runs: "ubuntu-24.04"
+          - arch: "aarch64"
+            runs: "ubuntu-24.04-arm"
+          - arch: "riscv64"
+            runs: "ubuntu-24.04"
+
+
+
+    runs-on: ${{ matrix.runs }}
+    name: scp BlissOS
+    env:
+      MYTOKEN : ${{ secrets.MYTOKEN }}
+      MYTOKEN2: "value2"
+      DEBUG: 1
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    steps:
+    - uses: actions/checkout@v6
+    - name: Check arch
+      id: check
+      run: |
+        _release="${{ matrix.release }}"
+        if [ -z "$_release" ]; then
+          . conf/default.release.conf
+          _release="$DEFAULT_RELEASE"
+        fi
+
+        _arch="${{ matrix.arch }}"
+        if [ "${_arch}" = "x86_64" ]; then
+          _arch=""
+        fi
+
+        if [ -z "${_arch}" ]; then
+          #ok, go ahead
+          echo "arch is empty"
+          echo "run=true" >> $GITHUB_OUTPUT
+        elif [ -e "conf/${_release}-${_arch}.conf" ]; then
+          #ok, go ahead
+          echo "conf exists: conf/${_release}-${_arch}.conf"
+          echo "run=true" >> $GITHUB_OUTPUT
+        else
+          echo "The release ${_release} doesn't support ${_arch}, skip."
+          echo "run=false" >> $GITHUB_OUTPUT
+        fi
+#    - name: Creating Web console
+#      if: ${{ steps.check.outputs.run == 'true' }}
+#      uses: vmactions/cf-tunnel@v0
+#      id: tunnel
+#      with:
+#        protocol: http
+#        port: 8000
+    - name: Test in BlissOS
+      if: ${{ steps.check.outputs.run == 'true' }}
+      id: test
+      uses: vmactions/blissos-vm@81d7ff01e3739951321c4f37edc2fd0177f56d0c
+      with:
+        envs: 'DEBUG MYTOKEN MYTOKEN2'
+        prepare: |
+          uname -a
+        mem: 4096
+        release: ${{ matrix.release }}
+        arch: ${{ matrix.arch }}
+        nat: |
+          "20022": "22"
+          "8080": "80"
+          "8443": "443"
+          udp:"8081": "80"
+        usesh: true
+        debug: true
+        debug-on-error: ${{ vars.DEBUG_ON_ERROR }}
+        sync: scp
+        run: |
+          ls -lah $HOME/work
+          #don't use tree here, freebsd riscv64 doesn't have a tree
+          #tree $HOME/work/
+          if [ -z "$(ls -A $HOME/work)" ]; then
+            echo "nfs error."
+            exit 1
+          fi
+          env
+          echo "TEST_ENV=abc" >>${GITHUB_ENV}
+          echo "textfromvm" >$GITHUB_WORKSPACE/vm.txt
+          pwd
+          ls -lah
+          whoami
+          env
+          uname -a
+          echo "OK"
+
+    - name: Test files
+      if: ${{ steps.check.outputs.run == 'true' }}
+      env:
+        VM_USER: ""
+      run: |
+        set -e
+        [ -e "$GITHUB_WORKSPACE/vm.txt" ];
+        cat "$GITHUB_WORKSPACE/vm.txt";
+        grep "textfromvm" $GITHUB_WORKSPACE/vm.txt;
+        cat ${GITHUB_ENV}
+        echo "TEST_ENV=$TEST_ENV";
+        [ "$TEST_ENV" = "abc" ];
+        
+
+
+
+
+
+
+
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        release: [ "14", "15", "16"
+, ""]
+        arch: [ "aarch64", "", "riscv64"]
+        runs: [ "ubuntu-24.04", "ubuntu-24.04-arm"]
+        disableCache: [ "", "true"]
+        exclude:
+          - runs: "ubuntu-24.04-arm"
+            arch: ""
+          - runs: "ubuntu-24.04-arm"
+            arch: "riscv64"
+          - arch: "aarch64"
+            runs: "ubuntu-24.04"
+          - arch: "aarch64"
+            runs: "ubuntu-24.04-arm"
+          - arch: "riscv64"
+            runs: "ubuntu-24.04"
+
+
+
+
+    runs-on: ${{ matrix.runs }}
+    name: rsync default BlissOS
+    env:
+      MYTOKEN : ${{ secrets.MYTOKEN }}
+      MYTOKEN2: "value2"
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    steps:
+    - uses: actions/checkout@v6
+    - name: Check arch
+      id: check
+      run: |
+        _release="${{ matrix.release }}"
+        if [ -z "$_release" ]; then
+          . conf/default.release.conf
+          _release="$DEFAULT_RELEASE"
+        fi
+
+        _arch="${{ matrix.arch }}"
+        if [ "${_arch}" = "x86_64" ]; then
+          _arch=""
+        fi
+
+        if [ -z "${_arch}" ]; then
+          #ok, go ahead
+          echo "arch is empty"
+          echo "run=true" >> $GITHUB_OUTPUT
+        elif [ -e "conf/${_release}-${_arch}.conf" ]; then
+          #ok, go ahead
+          echo "conf exists: conf/${_release}-${_arch}.conf"
+          if [[ "$(echo "BlissOS" | tr '[:upper:]' '[:lower:]')-${_arch}" == "freebsd-riscv64" ]]; then
+            echo "The BlissOS-${_arch} doesn't support rsync, skip."
+            echo "run=false" >> $GITHUB_OUTPUT
+          else
+            echo "run=true" >> $GITHUB_OUTPUT
+          fi
+        else
+          echo "The release ${_release} doesn't support ${_arch}, skip."
+          echo "run=false" >> $GITHUB_OUTPUT
+        fi
+    - name: Test in BlissOS
+      if: ${{ steps.check.outputs.run == 'true' }}
+      id: test
+      uses: vmactions/blissos-vm@81d7ff01e3739951321c4f37edc2fd0177f56d0c
+      with:
+        envs: 'MYTOKEN MYTOKEN2'
+        prepare: |
+          uname -a
+        mem: 4096
+        release: ${{ matrix.release }}
+        arch: ${{ matrix.arch }}
+        nat: |
+          "20022": "22"
+          "8080": "80"
+          "8443": "443"
+          udp:"8081": "80"
+        usesh: true
+        debug: true
+        debug-on-error: ${{ vars.DEBUG_ON_ERROR }}
+        disable-cache: ${{ matrix.disableCache }}
+        run: |
+          env
+          echo "TEST_ENV=abc" >>${GITHUB_ENV}
+          pwd
+          ls -lah
+          whoami
+          env
+          uname -a
+          echo "OK"
+    - name: Test NAT
+      if: ${{ steps.check.outputs.run == 'true' }}
+      env:
+        VM_USER: ""
+      run: |
+        set -e
+        echo "TEST_ENV=$TEST_ENV"
+        [ "$TEST_ENV" = "abc" ]
+        ssh -v  -p 20022 ${VM_USER:-root}@localhost  "uname -a;whoami;pwd"
+
+    - name: Test custom shell
+      if: ${{ steps.check.outputs.run == 'true' }}
+      shell: blissos {0}
+      run: |
+        pwd
+          pwd
+          ls -lah
+          whoami
+          env
+          uname -a
+          echo "OK"
+
+
+
+
+
+
+
+
+  testcustomshell:
+    strategy:
+      fail-fast: false
+      matrix:
+        release: [ "14", "15", "16"
+, ""]
+        arch: [ "aarch64", "", "riscv64"]
+        runs: [ "ubuntu-24.04", "ubuntu-24.04-arm"]
+        exclude:
+          - runs: "ubuntu-24.04-arm"
+            arch: ""
+          - runs: "ubuntu-24.04-arm"
+            arch: "riscv64"
+          - arch: "aarch64"
+            runs: "ubuntu-24.04"
+          - arch: "aarch64"
+            runs: "ubuntu-24.04-arm"
+          - arch: "riscv64"
+            runs: "ubuntu-24.04"
+
+
+
+
+    runs-on: ${{ matrix.runs }}
+    name: customshell BlissOS
+    env:
+      MYTOKEN : ${{ secrets.MYTOKEN }}
+      MYTOKEN2: "value2"
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    steps:
+    - uses: actions/checkout@v6
+    - name: Check arch
+      id: check
+      run: |
+        _release="${{ matrix.release }}"
+        if [ -z "$_release" ]; then
+          . conf/default.release.conf
+          _release="$DEFAULT_RELEASE"
+        fi
+
+        _arch="${{ matrix.arch }}"
+        if [ "${_arch}" = "x86_64" ]; then
+          _arch=""
+        fi
+
+        if [ -z "${_arch}" ]; then
+          #ok, go ahead
+          echo "arch is empty"
+          echo "run=true" >> $GITHUB_OUTPUT
+        elif [ -e "conf/${_release}-${_arch}.conf" ]; then
+          #ok, go ahead
+          echo "conf exists: conf/${_release}-${_arch}.conf"
+          if [[ "$(echo "BlissOS" | tr '[:upper:]' '[:lower:]')-${_arch}" == "freebsd-riscv64" ]]; then
+            echo "The BlissOS-${_arch} doesn't support rsync, skip."
+            echo "run=false" >> $GITHUB_OUTPUT
+          else
+            echo "run=true" >> $GITHUB_OUTPUT
+          fi
+        else
+          echo "The release ${_release} doesn't support ${_arch}, skip."
+          echo "run=false" >> $GITHUB_OUTPUT
+        fi
+    - name: Test in BlissOS
+      if: ${{ steps.check.outputs.run == 'true' }}
+      id: test
+      uses: vmactions/blissos-vm@81d7ff01e3739951321c4f37edc2fd0177f56d0c
+      with:
+        envs: 'MYTOKEN MYTOKEN2'
+        prepare: |
+          uname -a
+        mem: 4096
+        release: ${{ matrix.release }}
+        arch: ${{ matrix.arch }}
+        nat: |
+          "20022": "22"
+          "8080": "80"
+          "8443": "443"
+          udp:"8081": "80"
+        usesh: true
+        debug: true
+        debug-on-error: ${{ vars.DEBUG_ON_ERROR }}
+        custom-shell-name: vmsh
+        run: |
+          env
+          echo "TEST_ENV=abc" >>${GITHUB_ENV}
+          pwd
+          ls -lah
+          whoami
+          env
+          uname -a
+          echo "OK"
+    - name: Test NAT
+      if: ${{ steps.check.outputs.run == 'true' }}
+      env:
+        VM_USER: ""
+      run: |
+        set -e
+        echo "TEST_ENV=$TEST_ENV"
+        [ "$TEST_ENV" = "abc" ]
+        ssh -v  -p 20022 ${VM_USER:-root}@localhost  "uname -a;whoami;pwd"
+
+    - name: Test custom shell
+      if: ${{ steps.check.outputs.run == 'true' }}
+      shell: vmsh {0}
+      run: |
+        pwd
+          pwd
+          ls -lah
+          whoami
+          env
+          uname -a
+          echo "OK"
+
+
+
+
+
+
+  testerr:
+    strategy:
+      fail-fast: false
+    runs-on: ubuntu-24.04
+    name: test default error BlissOS
+    steps:
+    - uses: actions/checkout@v6
+    - name: Test in BlissOS
+      id: testerr
+      continue-on-error: true 
+      uses: vmactions/blissos-vm@81d7ff01e3739951321c4f37edc2fd0177f56d0c
+      with:
+        usesh: true
+        debug: true
+        run: |
+          echo "this is an error"
+          false
+    - name: Verify that the previous step failed
+      if: steps.testerr.outcome != 'failure'
+      run: |
+        echo "The step was expected to fail, but it succeeded!"
+        exit 1
+    - name: Verify that the previous step succeeded
+      if: steps.testerr.outcome == 'failure'
+      run: |
+        echo "The step was expected to fail, and it failed!"
+        exit 0
+
+  testpass:
+    strategy:
+      fail-fast: false
+    runs-on: ubuntu-24.04
+    name: test default success BlissOS
+    steps:
+    - uses: actions/checkout@v6
+    - name: Test in BlissOS
+      id: testpass
+      continue-on-error: true 
+      uses: vmactions/blissos-vm@81d7ff01e3739951321c4f37edc2fd0177f56d0c
+      with:
+        usesh: true
+        debug: true
+        run: |
+          echo "this is a normal command"
+          true
+    - name: Verify that the previous step succeeded
+      if: steps.testpass.outcome != 'success'
+      run: |
+        echo "The step was expected to succeed, but it failed!"
+        exit 1
+    - name: Verify that the previous step failed
+      if: steps.testpass.outcome == 'success'
+      run: |
+        echo "The step was expected to succeed, and it succeeded!"
+        exit 0
+
+
+
+
+
+
+
+
+
