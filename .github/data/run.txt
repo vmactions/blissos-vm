@@ -1,0 +1,6 @@
+          pwd
+          ls -lah
+          whoami
+          env
+          uname -a
+          echo "OK"

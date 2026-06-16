@@ -1,0 +1,12 @@
+
+
+Note:
+
+BlissOS is an Android system. The guest image ships no `rsync`, `sshfs` or
+`nfs` support, and Android has no package manager to install them over ssh.
+So only `sync: scp` (and `sync: no`) can work.
+
+For convenience, the default `rsync` sync mode automatically falls back to
+`scp` on BlissOS, so you can simply omit the `sync` option.
+
+

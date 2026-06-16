@@ -1,0 +1,49 @@
+name: "Step 1, Sync generate.yml from BaseVM"
+on:
+  schedule:
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - '.github/data/*'
+      - 'conf/*'
+      - '.github/workflows/syncbase.yml'
+
+    
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with: 
+          token: ${{ secrets.VM_TOKEN }}
+
+      - name: Using main branch
+        run: |
+          git switch main || (git fetch --all && git checkout -b main origin/main)
+          . conf/default.release.conf
+          echo "DEFAULT_RELEASE=$DEFAULT_RELEASE" >> $GITHUB_ENV
+          echo "ALL_RELEASES=\"$(ls conf/ | grep -v default | sed 's/.conf//g' | tr '\n' ',' | sed "s/,\$//" | sed 's/,/", "/g')\"" >> $GITHUB_ENV
+
+          git clone https://github.com/vmactions/base-vm.git
+
+      - name: Sync generate.yml
+        uses: anyvm-org/template-render@v0.0.4
+        with:
+          datafile: .github/data/datafile.ini
+          files: |
+            base-vm/.github/tpl/generate.tpl.yml : .github/workflows/generate.yml
+
+      - name: Commit and push changes
+        run: |
+          git add .github/workflows/generate.yml
+          git diff --cached --quiet && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -m "Sync from base-builder"
+          git pull --rebase --autostash
+          git push
+
+
