@@ -945,7 +945,13 @@ async function main() {
         core.startGroup("Copyback artifacts");
         if (sync === 'scp') {
           let useCpio = true;
-          if (osName === 'haiku' || osName === 'blissos') {
+          if (osName === 'blissos') {
+            // Toybox cpio ignores `-H ustar` and emits a newc cpio stream that
+            // the host `tar -xf` rejects ("This does not look like a tar
+            // archive"). Toybox tar writes a standard, host-readable archive,
+            // so copy back with tar directly instead of cpio.
+            useCpio = false;
+          } else if (osName === 'haiku') {
             try {
               await execSSH("command -v cpio", sshConfig);
             } catch (e) {
