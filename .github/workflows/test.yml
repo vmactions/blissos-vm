@@ -98,7 +98,7 @@ jobs:
     - name: Test in BlissOS
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/blissos-vm@2d052682d9937b718b6f1a8700254ddb8f01e8ac
+      uses: vmactions/blissos-vm@d105fee0af0aa350022d6c8f241d83f28cd97d50
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -224,7 +224,7 @@ jobs:
     - name: Test in BlissOS
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/blissos-vm@2d052682d9937b718b6f1a8700254ddb8f01e8ac
+      uses: vmactions/blissos-vm@d105fee0af0aa350022d6c8f241d83f28cd97d50
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -351,7 +351,7 @@ jobs:
     - name: Test in BlissOS
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/blissos-vm@2d052682d9937b718b6f1a8700254ddb8f01e8ac
+      uses: vmactions/blissos-vm@d105fee0af0aa350022d6c8f241d83f28cd97d50
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -472,7 +472,7 @@ jobs:
     - name: Test in BlissOS
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/blissos-vm@2d052682d9937b718b6f1a8700254ddb8f01e8ac
+      uses: vmactions/blissos-vm@d105fee0af0aa350022d6c8f241d83f28cd97d50
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -592,7 +592,7 @@ jobs:
     - name: Test in BlissOS
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/blissos-vm@2d052682d9937b718b6f1a8700254ddb8f01e8ac
+      uses: vmactions/blissos-vm@d105fee0af0aa350022d6c8f241d83f28cd97d50
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -655,7 +655,7 @@ jobs:
     - name: Test in BlissOS
       id: testerr
       continue-on-error: true 
-      uses: vmactions/blissos-vm@2d052682d9937b718b6f1a8700254ddb8f01e8ac
+      uses: vmactions/blissos-vm@d105fee0af0aa350022d6c8f241d83f28cd97d50
       with:
         usesh: true
         debug: true
@@ -683,7 +683,7 @@ jobs:
     - name: Test in BlissOS
       id: testpass
       continue-on-error: true 
-      uses: vmactions/blissos-vm@2d052682d9937b718b6f1a8700254ddb8f01e8ac
+      uses: vmactions/blissos-vm@d105fee0af0aa350022d6c8f241d83f28cd97d50
       with:
         usesh: true
         debug: true
