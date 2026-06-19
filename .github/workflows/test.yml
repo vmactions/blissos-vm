@@ -74,7 +74,7 @@ jobs:
     - name: Test in BlissOS
       if: ${{ contains(fromJSON('')[matrix.arch == '' && 'x86_64' || matrix.arch], 'sshfs') }}
       id: test
-      uses: vmactions/blissos-vm@c0fbfb582f36c3e95683844a332e109a193d79de
+      uses: vmactions/blissos-vm@f7d39359ac3a0cf5b0f5a0a56b6181db1516e238
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -175,7 +175,7 @@ jobs:
     - name: Test in BlissOS
       if: ${{ contains(fromJSON('')[matrix.arch == '' && 'x86_64' || matrix.arch], 'nfs') }}
       id: test
-      uses: vmactions/blissos-vm@c0fbfb582f36c3e95683844a332e109a193d79de
+      uses: vmactions/blissos-vm@f7d39359ac3a0cf5b0f5a0a56b6181db1516e238
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -284,7 +284,7 @@ jobs:
     - name: Test in BlissOS
       if: ${{ contains(fromJSON('')[matrix.arch == '' && 'x86_64' || matrix.arch], 'scp') }}
       id: test
-      uses: vmactions/blissos-vm@c0fbfb582f36c3e95683844a332e109a193d79de
+      uses: vmactions/blissos-vm@f7d39359ac3a0cf5b0f5a0a56b6181db1516e238
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -379,7 +379,7 @@ jobs:
     - name: Test in BlissOS
       if: ${{ contains(fromJSON('')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
       id: test
-      uses: vmactions/blissos-vm@c0fbfb582f36c3e95683844a332e109a193d79de
+      uses: vmactions/blissos-vm@f7d39359ac3a0cf5b0f5a0a56b6181db1516e238
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -475,7 +475,7 @@ jobs:
     - name: Test in BlissOS
       if: ${{ contains(fromJSON('')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
       id: test
-      uses: vmactions/blissos-vm@c0fbfb582f36c3e95683844a332e109a193d79de
+      uses: vmactions/blissos-vm@f7d39359ac3a0cf5b0f5a0a56b6181db1516e238
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -538,7 +538,7 @@ jobs:
     - name: Test in BlissOS
       id: testerr
       continue-on-error: true
-      uses: vmactions/blissos-vm@c0fbfb582f36c3e95683844a332e109a193d79de
+      uses: vmactions/blissos-vm@f7d39359ac3a0cf5b0f5a0a56b6181db1516e238
       with:
         usesh: true
         debug: true
@@ -566,7 +566,7 @@ jobs:
     - name: Test in BlissOS
       id: testpass
       continue-on-error: true
-      uses: vmactions/blissos-vm@c0fbfb582f36c3e95683844a332e109a193d79de
+      uses: vmactions/blissos-vm@f7d39359ac3a0cf5b0f5a0a56b6181db1516e238
       with:
         usesh: true
         debug: true
