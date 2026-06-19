@@ -52,6 +52,54 @@ jobs:
           - arch: "riscv64"
             runs: "ubuntu-24.04"
 
+          - release: "14"
+            arch: aarch64
+          - release: "14"
+            arch: riscv64
+          - release: "14"
+            arch: powerpc64
+          - release: "14"
+            arch: sparc64
+          - release: "14"
+            arch: ppc64le
+          - release: "14"
+            arch: s390x
+          - release: "15"
+            arch: aarch64
+          - release: "15"
+            arch: riscv64
+          - release: "15"
+            arch: powerpc64
+          - release: "15"
+            arch: sparc64
+          - release: "15"
+            arch: ppc64le
+          - release: "15"
+            arch: s390x
+          - release: "16"
+            arch: aarch64
+          - release: "16"
+            arch: riscv64
+          - release: "16"
+            arch: powerpc64
+          - release: "16"
+            arch: sparc64
+          - release: "16"
+            arch: ppc64le
+          - release: "16"
+            arch: s390x
+          - release: ""
+            arch: aarch64
+          - release: ""
+            arch: riscv64
+          - release: ""
+            arch: powerpc64
+          - release: ""
+            arch: sparc64
+          - release: ""
+            arch: ppc64le
+          - release: ""
+            arch: s390x
 
 
     runs-on: ${{ matrix.runs }}
@@ -64,7 +112,7 @@ jobs:
     steps:
     - uses: actions/checkout@v6
 #    - name: Creating Web console
-#      if: ${{ contains(fromJSON('')[matrix.arch == '' && 'x86_64' || matrix.arch], 'sshfs') }}
+#      if: ${{ contains(fromJSON('{"x86_64":[],"aarch64":[],"riscv64":[],"powerpc64":[],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'sshfs') }}
 #      uses: vmactions/cf-tunnel@v0
 #      id: tunnel
 #      with:
@@ -72,9 +120,9 @@ jobs:
 #        port: 8000
 
     - name: Test in BlissOS
-      if: ${{ contains(fromJSON('')[matrix.arch == '' && 'x86_64' || matrix.arch], 'sshfs') }}
+      if: ${{ contains(fromJSON('{"x86_64":[],"aarch64":[],"riscv64":[],"powerpc64":[],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'sshfs') }}
       id: test
-      uses: vmactions/blissos-vm@f7d39359ac3a0cf5b0f5a0a56b6181db1516e238
+      uses: vmactions/blissos-vm@8fed8fd51b18ddbca6ef816b1fc22b367be0a425
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -108,7 +156,7 @@ jobs:
           echo "OK"
 
     - name: Test NAT
-      if: ${{ contains(fromJSON('')[matrix.arch == '' && 'x86_64' || matrix.arch], 'sshfs') }}
+      if: ${{ contains(fromJSON('{"x86_64":[],"aarch64":[],"riscv64":[],"powerpc64":[],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'sshfs') }}
       env:
         VM_USER: ""
       run: |
@@ -117,7 +165,7 @@ jobs:
         [ "$TEST_ENV" = "abc" ]
         ssh -v -p 20022 ${VM_USER:-root}@localhost  "uname -a;whoami;pwd"
     - name: Test custom shell
-      if: ${{ contains(fromJSON('')[matrix.arch == '' && 'x86_64' || matrix.arch], 'sshfs') }}
+      if: ${{ contains(fromJSON('{"x86_64":[],"aarch64":[],"riscv64":[],"powerpc64":[],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'sshfs') }}
       shell: blissos {0}
       run: |
         pwd
@@ -161,6 +209,54 @@ jobs:
           - arch: "riscv64"
             runs: "ubuntu-24.04"
 
+          - release: "14"
+            arch: aarch64
+          - release: "14"
+            arch: riscv64
+          - release: "14"
+            arch: powerpc64
+          - release: "14"
+            arch: sparc64
+          - release: "14"
+            arch: ppc64le
+          - release: "14"
+            arch: s390x
+          - release: "15"
+            arch: aarch64
+          - release: "15"
+            arch: riscv64
+          - release: "15"
+            arch: powerpc64
+          - release: "15"
+            arch: sparc64
+          - release: "15"
+            arch: ppc64le
+          - release: "15"
+            arch: s390x
+          - release: "16"
+            arch: aarch64
+          - release: "16"
+            arch: riscv64
+          - release: "16"
+            arch: powerpc64
+          - release: "16"
+            arch: sparc64
+          - release: "16"
+            arch: ppc64le
+          - release: "16"
+            arch: s390x
+          - release: ""
+            arch: aarch64
+          - release: ""
+            arch: riscv64
+          - release: ""
+            arch: powerpc64
+          - release: ""
+            arch: sparc64
+          - release: ""
+            arch: ppc64le
+          - release: ""
+            arch: s390x
 
 
     runs-on: ${{ matrix.runs }}
@@ -173,9 +269,9 @@ jobs:
     steps:
     - uses: actions/checkout@v6
     - name: Test in BlissOS
-      if: ${{ contains(fromJSON('')[matrix.arch == '' && 'x86_64' || matrix.arch], 'nfs') }}
+      if: ${{ contains(fromJSON('{"x86_64":[],"aarch64":[],"riscv64":[],"powerpc64":[],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'nfs') }}
       id: test
-      uses: vmactions/blissos-vm@f7d39359ac3a0cf5b0f5a0a56b6181db1516e238
+      uses: vmactions/blissos-vm@8fed8fd51b18ddbca6ef816b1fc22b367be0a425
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -209,7 +305,7 @@ jobs:
           echo "OK"
 
     - name: Test NAT
-      if: ${{ contains(fromJSON('')[matrix.arch == '' && 'x86_64' || matrix.arch], 'nfs') }}
+      if: ${{ contains(fromJSON('{"x86_64":[],"aarch64":[],"riscv64":[],"powerpc64":[],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'nfs') }}
       env:
         VM_USER: ""
       run: |
@@ -221,7 +317,7 @@ jobs:
         [ "$TEST_ENV" = "abc" ]
         ssh -v -p 20022 ${VM_USER:-root}@localhost "uname -a;whoami;pwd"
     - name: Test custom shell
-      if: ${{ contains(fromJSON('')[matrix.arch == '' && 'x86_64' || matrix.arch], 'nfs') }}
+      if: ${{ contains(fromJSON('{"x86_64":[],"aarch64":[],"riscv64":[],"powerpc64":[],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'nfs') }}
       shell: blissos {0}
       run: |
         pwd
@@ -263,6 +359,54 @@ jobs:
           - arch: "riscv64"
             runs: "ubuntu-24.04"
 
+          - release: "14"
+            arch: aarch64
+          - release: "14"
+            arch: riscv64
+          - release: "14"
+            arch: powerpc64
+          - release: "14"
+            arch: sparc64
+          - release: "14"
+            arch: ppc64le
+          - release: "14"
+            arch: s390x
+          - release: "15"
+            arch: aarch64
+          - release: "15"
+            arch: riscv64
+          - release: "15"
+            arch: powerpc64
+          - release: "15"
+            arch: sparc64
+          - release: "15"
+            arch: ppc64le
+          - release: "15"
+            arch: s390x
+          - release: "16"
+            arch: aarch64
+          - release: "16"
+            arch: riscv64
+          - release: "16"
+            arch: powerpc64
+          - release: "16"
+            arch: sparc64
+          - release: "16"
+            arch: ppc64le
+          - release: "16"
+            arch: s390x
+          - release: ""
+            arch: aarch64
+          - release: ""
+            arch: riscv64
+          - release: ""
+            arch: powerpc64
+          - release: ""
+            arch: sparc64
+          - release: ""
+            arch: ppc64le
+          - release: ""
+            arch: s390x
 
 
     runs-on: ${{ matrix.runs }}
@@ -275,16 +419,16 @@ jobs:
     steps:
     - uses: actions/checkout@v6
 #    - name: Creating Web console
-#      if: ${{ contains(fromJSON('')[matrix.arch == '' && 'x86_64' || matrix.arch], 'scp') }}
+#      if: ${{ contains(fromJSON('{"x86_64":[],"aarch64":[],"riscv64":[],"powerpc64":[],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'scp') }}
 #      uses: vmactions/cf-tunnel@v0
 #      id: tunnel
 #      with:
 #        protocol: http
 #        port: 8000
     - name: Test in BlissOS
-      if: ${{ contains(fromJSON('')[matrix.arch == '' && 'x86_64' || matrix.arch], 'scp') }}
+      if: ${{ contains(fromJSON('{"x86_64":[],"aarch64":[],"riscv64":[],"powerpc64":[],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'scp') }}
       id: test
-      uses: vmactions/blissos-vm@f7d39359ac3a0cf5b0f5a0a56b6181db1516e238
+      uses: vmactions/blissos-vm@8fed8fd51b18ddbca6ef816b1fc22b367be0a425
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -320,7 +464,7 @@ jobs:
           echo "OK"
 
     - name: Test files
-      if: ${{ contains(fromJSON('')[matrix.arch == '' && 'x86_64' || matrix.arch], 'scp') }}
+      if: ${{ contains(fromJSON('{"x86_64":[],"aarch64":[],"riscv64":[],"powerpc64":[],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'scp') }}
       env:
         VM_USER: ""
       run: |
@@ -365,6 +509,54 @@ jobs:
           - arch: "riscv64"
             runs: "ubuntu-24.04"
 
+          - release: "14"
+            arch: aarch64
+          - release: "14"
+            arch: riscv64
+          - release: "14"
+            arch: powerpc64
+          - release: "14"
+            arch: sparc64
+          - release: "14"
+            arch: ppc64le
+          - release: "14"
+            arch: s390x
+          - release: "15"
+            arch: aarch64
+          - release: "15"
+            arch: riscv64
+          - release: "15"
+            arch: powerpc64
+          - release: "15"
+            arch: sparc64
+          - release: "15"
+            arch: ppc64le
+          - release: "15"
+            arch: s390x
+          - release: "16"
+            arch: aarch64
+          - release: "16"
+            arch: riscv64
+          - release: "16"
+            arch: powerpc64
+          - release: "16"
+            arch: sparc64
+          - release: "16"
+            arch: ppc64le
+          - release: "16"
+            arch: s390x
+          - release: ""
+            arch: aarch64
+          - release: ""
+            arch: riscv64
+          - release: ""
+            arch: powerpc64
+          - release: ""
+            arch: sparc64
+          - release: ""
+            arch: ppc64le
+          - release: ""
+            arch: s390x
 
 
 
@@ -377,9 +569,9 @@ jobs:
     steps:
     - uses: actions/checkout@v6
     - name: Test in BlissOS
-      if: ${{ contains(fromJSON('')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
+      if: ${{ contains(fromJSON('{"x86_64":[],"aarch64":[],"riscv64":[],"powerpc64":[],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
       id: test
-      uses: vmactions/blissos-vm@f7d39359ac3a0cf5b0f5a0a56b6181db1516e238
+      uses: vmactions/blissos-vm@8fed8fd51b18ddbca6ef816b1fc22b367be0a425
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -406,7 +598,7 @@ jobs:
           uname -a
           echo "OK"
     - name: Test NAT
-      if: ${{ contains(fromJSON('')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
+      if: ${{ contains(fromJSON('{"x86_64":[],"aarch64":[],"riscv64":[],"powerpc64":[],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
       env:
         VM_USER: ""
       run: |
@@ -416,7 +608,7 @@ jobs:
         ssh -v  -p 20022 ${VM_USER:-root}@localhost  "uname -a;whoami;pwd"
 
     - name: Test custom shell
-      if: ${{ contains(fromJSON('')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
+      if: ${{ contains(fromJSON('{"x86_64":[],"aarch64":[],"riscv64":[],"powerpc64":[],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
       shell: blissos {0}
       run: |
         pwd
@@ -461,6 +653,54 @@ jobs:
           - arch: "riscv64"
             runs: "ubuntu-24.04"
 
+          - release: "14"
+            arch: aarch64
+          - release: "14"
+            arch: riscv64
+          - release: "14"
+            arch: powerpc64
+          - release: "14"
+            arch: sparc64
+          - release: "14"
+            arch: ppc64le
+          - release: "14"
+            arch: s390x
+          - release: "15"
+            arch: aarch64
+          - release: "15"
+            arch: riscv64
+          - release: "15"
+            arch: powerpc64
+          - release: "15"
+            arch: sparc64
+          - release: "15"
+            arch: ppc64le
+          - release: "15"
+            arch: s390x
+          - release: "16"
+            arch: aarch64
+          - release: "16"
+            arch: riscv64
+          - release: "16"
+            arch: powerpc64
+          - release: "16"
+            arch: sparc64
+          - release: "16"
+            arch: ppc64le
+          - release: "16"
+            arch: s390x
+          - release: ""
+            arch: aarch64
+          - release: ""
+            arch: riscv64
+          - release: ""
+            arch: powerpc64
+          - release: ""
+            arch: sparc64
+          - release: ""
+            arch: ppc64le
+          - release: ""
+            arch: s390x
 
 
 
@@ -473,9 +713,9 @@ jobs:
     steps:
     - uses: actions/checkout@v6
     - name: Test in BlissOS
-      if: ${{ contains(fromJSON('')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
+      if: ${{ contains(fromJSON('{"x86_64":[],"aarch64":[],"riscv64":[],"powerpc64":[],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
       id: test
-      uses: vmactions/blissos-vm@f7d39359ac3a0cf5b0f5a0a56b6181db1516e238
+      uses: vmactions/blissos-vm@8fed8fd51b18ddbca6ef816b1fc22b367be0a425
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -502,7 +742,7 @@ jobs:
           uname -a
           echo "OK"
     - name: Test NAT
-      if: ${{ contains(fromJSON('')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
+      if: ${{ contains(fromJSON('{"x86_64":[],"aarch64":[],"riscv64":[],"powerpc64":[],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
       env:
         VM_USER: ""
       run: |
@@ -512,7 +752,7 @@ jobs:
         ssh -v  -p 20022 ${VM_USER:-root}@localhost  "uname -a;whoami;pwd"
 
     - name: Test custom shell
-      if: ${{ contains(fromJSON('')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
+      if: ${{ contains(fromJSON('{"x86_64":[],"aarch64":[],"riscv64":[],"powerpc64":[],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
       shell: vmsh {0}
       run: |
         pwd
@@ -538,7 +778,7 @@ jobs:
     - name: Test in BlissOS
       id: testerr
       continue-on-error: true
-      uses: vmactions/blissos-vm@f7d39359ac3a0cf5b0f5a0a56b6181db1516e238
+      uses: vmactions/blissos-vm@8fed8fd51b18ddbca6ef816b1fc22b367be0a425
       with:
         usesh: true
         debug: true
@@ -566,7 +806,7 @@ jobs:
     - name: Test in BlissOS
       id: testpass
       continue-on-error: true
-      uses: vmactions/blissos-vm@f7d39359ac3a0cf5b0f5a0a56b6181db1516e238
+      uses: vmactions/blissos-vm@8fed8fd51b18ddbca6ef816b1fc22b367be0a425
       with:
         usesh: true
         debug: true

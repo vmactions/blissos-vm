@@ -1,0 +1,48 @@
+          - release: "14"
+            arch: aarch64
+          - release: "14"
+            arch: riscv64
+          - release: "14"
+            arch: powerpc64
+          - release: "14"
+            arch: sparc64
+          - release: "14"
+            arch: ppc64le
+          - release: "14"
+            arch: s390x
+          - release: "15"
+            arch: aarch64
+          - release: "15"
+            arch: riscv64
+          - release: "15"
+            arch: powerpc64
+          - release: "15"
+            arch: sparc64
+          - release: "15"
+            arch: ppc64le
+          - release: "15"
+            arch: s390x
+          - release: "16"
+            arch: aarch64
+          - release: "16"
+            arch: riscv64
+          - release: "16"
+            arch: powerpc64
+          - release: "16"
+            arch: sparc64
+          - release: "16"
+            arch: ppc64le
+          - release: "16"
+            arch: s390x
+          - release: ""
+            arch: aarch64
+          - release: ""
+            arch: riscv64
+          - release: ""
+            arch: powerpc64
+          - release: ""
+            arch: sparc64
+          - release: ""
+            arch: ppc64le
+          - release: ""
+            arch: s390x
