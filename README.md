@@ -19,9 +19,9 @@ All the supported releases are here:
 
 | Release (BlissOS) | Android | x86_64 (amd64) |
 |-------------------|---------|----------------|
-| 16                | 13      |  ✅            |
-| 15                | 12L     |  ✅            |
-| 14                | 11      |  ✅            |
+| 16                | 13      |  ✅ (scp)            |
+| 15                | 12L     |  ✅ (scp)            |
+| 14                | 11      |  ✅ (scp)            |
 
 
 
