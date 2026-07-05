@@ -116,7 +116,7 @@ jobs:
     - name: Test in BlissOS
       if: ${{ contains(fromJSON('{"x86_64":["scp"],"aarch64":[],"riscv64":[],"powerpc64":[],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'sshfs') }}
       id: test
-      uses: vmactions/blissos-vm@042ca981ad77187c5e6e84318679e79ae8f9d663
+      uses: vmactions/blissos-vm@ecfcff8567b877ad70b909c0dfd9c14d450565a8
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -259,7 +259,7 @@ jobs:
     - name: Test in BlissOS
       if: ${{ contains(fromJSON('{"x86_64":["scp"],"aarch64":[],"riscv64":[],"powerpc64":[],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'nfs') }}
       id: test
-      uses: vmactions/blissos-vm@042ca981ad77187c5e6e84318679e79ae8f9d663
+      uses: vmactions/blissos-vm@ecfcff8567b877ad70b909c0dfd9c14d450565a8
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -410,7 +410,7 @@ jobs:
     - name: Test in BlissOS
       if: ${{ contains(fromJSON('{"x86_64":["scp"],"aarch64":[],"riscv64":[],"powerpc64":[],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'scp') }}
       id: test
-      uses: vmactions/blissos-vm@042ca981ad77187c5e6e84318679e79ae8f9d663
+      uses: vmactions/blissos-vm@ecfcff8567b877ad70b909c0dfd9c14d450565a8
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -547,7 +547,7 @@ jobs:
     - name: Test in BlissOS
       if: ${{ contains(fromJSON('{"x86_64":["scp"],"aarch64":[],"riscv64":[],"powerpc64":[],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
       id: test
-      uses: vmactions/blissos-vm@042ca981ad77187c5e6e84318679e79ae8f9d663
+      uses: vmactions/blissos-vm@ecfcff8567b877ad70b909c0dfd9c14d450565a8
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -685,7 +685,7 @@ jobs:
     - name: Test in BlissOS
       if: ${{ contains(fromJSON('{"x86_64":["scp"],"aarch64":[],"riscv64":[],"powerpc64":[],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
       id: test
-      uses: vmactions/blissos-vm@042ca981ad77187c5e6e84318679e79ae8f9d663
+      uses: vmactions/blissos-vm@ecfcff8567b877ad70b909c0dfd9c14d450565a8
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -748,7 +748,7 @@ jobs:
     - name: Test in BlissOS
       id: testerr
       continue-on-error: true
-      uses: vmactions/blissos-vm@042ca981ad77187c5e6e84318679e79ae8f9d663
+      uses: vmactions/blissos-vm@ecfcff8567b877ad70b909c0dfd9c14d450565a8
       with:
         usesh: true
         debug: true
@@ -776,7 +776,7 @@ jobs:
     - name: Test in BlissOS
       id: testpass
       continue-on-error: true
-      uses: vmactions/blissos-vm@042ca981ad77187c5e6e84318679e79ae8f9d663
+      uses: vmactions/blissos-vm@ecfcff8567b877ad70b909c0dfd9c14d450565a8
       with:
         usesh: true
         debug: true
