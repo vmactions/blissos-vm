@@ -10,6 +10,8 @@
             arch: ppc64le
           - release: "14"
             arch: s390x
+          - release: "14"
+            arch: i386
           - release: "15"
             arch: aarch64
           - release: "15"
@@ -22,6 +24,8 @@
             arch: ppc64le
           - release: "15"
             arch: s390x
+          - release: "15"
+            arch: i386
           - release: "16"
             arch: aarch64
           - release: "16"
@@ -34,6 +38,8 @@
             arch: ppc64le
           - release: "16"
             arch: s390x
+          - release: "16"
+            arch: i386
           - release: ""
             arch: aarch64
           - release: ""
@@ -46,3 +52,5 @@
             arch: ppc64le
           - release: ""
             arch: s390x
+          - release: ""
+            arch: i386
