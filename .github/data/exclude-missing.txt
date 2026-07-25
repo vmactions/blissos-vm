@@ -12,6 +12,8 @@
             arch: s390x
           - release: "14"
             arch: i386
+          - release: "14"
+            arch: loongarch64
           - release: "15"
             arch: aarch64
           - release: "15"
@@ -26,6 +28,8 @@
             arch: s390x
           - release: "15"
             arch: i386
+          - release: "15"
+            arch: loongarch64
           - release: "16"
             arch: aarch64
           - release: "16"
@@ -40,6 +44,8 @@
             arch: s390x
           - release: "16"
             arch: i386
+          - release: "16"
+            arch: loongarch64
           - release: ""
             arch: aarch64
           - release: ""
@@ -54,3 +60,5 @@
             arch: s390x
           - release: ""
             arch: i386
+          - release: ""
+            arch: loongarch64
