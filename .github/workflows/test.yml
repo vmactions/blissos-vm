@@ -136,6 +136,14 @@ jobs:
             arch: loongarch64
           - release: ""
             arch: armv7
+          - release: "14"
+            arch: ""
+          - release: "15"
+            arch: ""
+          - release: "16"
+            arch: ""
+          - release: ""
+            arch: ""
 
 
     runs-on: ${{ matrix.runs }}
@@ -339,6 +347,14 @@ jobs:
             arch: loongarch64
           - release: ""
             arch: armv7
+          - release: "14"
+            arch: ""
+          - release: "15"
+            arch: ""
+          - release: "16"
+            arch: ""
+          - release: ""
+            arch: ""
 
 
     runs-on: ${{ matrix.runs }}
@@ -896,6 +912,14 @@ jobs:
             arch: loongarch64
           - release: ""
             arch: armv7
+          - release: "14"
+            arch: ""
+          - release: "15"
+            arch: ""
+          - release: "16"
+            arch: ""
+          - release: ""
+            arch: ""
 
 
 
@@ -1086,6 +1110,14 @@ jobs:
             arch: loongarch64
           - release: ""
             arch: armv7
+          - release: "14"
+            arch: ""
+          - release: "15"
+            arch: ""
+          - release: "16"
+            arch: ""
+          - release: ""
+            arch: ""
 
 
 
