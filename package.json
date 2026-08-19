@@ -1,6 +1,6 @@
 {
   "name": "vmactions-BlissOS",
-  "version": "",
+  "version": "1.0.1",
   "description": "GitHub actions for BlissOS",
   "type": "module",
   "main": "index.js",
