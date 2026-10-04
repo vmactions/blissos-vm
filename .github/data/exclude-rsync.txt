@@ -4,5 +4,3 @@
             arch: ""
           - release: "16"
             arch: ""
-          - release: ""
-            arch: ""
