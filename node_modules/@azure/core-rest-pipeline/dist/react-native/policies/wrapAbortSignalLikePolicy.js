@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-import { wrapAbortSignalLike } from "../util/wrapAbortSignal-rn.mjs";
+import { wrapAbortSignalLike } from "../util/wrapAbortSignal.js";
 export const wrapAbortSignalLikePolicyName = "wrapAbortSignalLikePolicy";
 /**
  * Policy that ensure that any AbortSignalLike is wrapped in a native AbortSignal for processing by the pipeline.

@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-import { getHeaderName, setPlatformSpecificData } from "./userAgentPlatform-react-native.mjs";
+import { getHeaderName, setPlatformSpecificData } from "./userAgentPlatform.js";
 import { SDK_VERSION } from "../constants.js";
 function getUserAgentString(telemetryInfo) {
     const parts = [];
